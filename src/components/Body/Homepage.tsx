@@ -17,13 +17,13 @@ const Home = () => {
                     <div className="lg:flex md:flex sm:inline-block my-5">
                         <button 
                             className="text-white rounded-lg bg-black p-3 mr-3">
-                            <Link href="/login">
+                            <Link href="/collect">
                                 Collect item
                             </Link>
                         </button>
                         <button 
                             className="text-white rounded-lg bg-black p-3">
-                            <Link href="/login">
+                            <Link href="/list">
                                 List item
                             </Link>
                         </button>

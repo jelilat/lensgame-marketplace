@@ -25,8 +25,8 @@ const Header = () => {
             setLoggedIn(true);
         }
 
-        if (chain?.id !== chains.polygonMumbai.id) {
-            switchNetwork?.(chains.polygonMumbai.id)
+        if (chain?.id !== chains.polygon.id) {console.log(chain?.id, chains.polygon.id)
+            switchNetwork?.(chains.polygon.id)
         }
     }, [loggedIn, switchNetwork, chain])
 

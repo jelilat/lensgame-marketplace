@@ -8,7 +8,7 @@ import result from './generated/types'
 import Cookies, { CookieAttributes } from 'js-cookie'
 import jwtDecode from 'jwt-decode'
 
-const API_URL = 'https://api-mumbai.lens.dev'
+const API_URL = 'https://api.lens.dev'
 
 export const COOKIE_CONFIG: CookieAttributes = {
 sameSite: 'None',

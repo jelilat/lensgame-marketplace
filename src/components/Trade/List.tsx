@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useMutation } from '@apollo/client'
 import { CREATE_POST_TYPED_DATA } from '@graphql/Mutations/Publication'
+import { BROADCAST_MUTATION } from '@graphql/Mutations/Broadcast'
 import { useAppContext } from '@components/utils/AppContext'
 import { CollectModuleParams, CollectModules, CreatePostBroadcastItemResult } from '@generated/types'
 import { 
@@ -36,7 +37,7 @@ const List = () => {
         name: 'FreeCollectModuleSettings',
         moduleParams: {
             freeCollectModule: {
-                followerOnly: onlyFollower,
+                followerOnly: false,
             }
         }
     });
@@ -46,8 +47,9 @@ const List = () => {
         title: '',
         description: ''
     });
-    const [image, setImage] = useState<string>();
-    const [currency, setCurrency] = useState<string>('');
+    const [image, setImage] = useState<string>('');
+    const [imageMimeType, setImageMimeType] = useState<string>('');
+    const [currency, setCurrency] = useState<string>('0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270');
     const [price, setPrice] = useState<string>('0');
     const [collectLimit, setCollectLimit] = useState<string>('1000')
 
@@ -58,14 +60,16 @@ const List = () => {
       })
 
     const { write } = useContractWrite({
-        addressOrName: '0x60Ae865ee4C725cd04353b5AAb364553f56ceF82',
+        addressOrName: '0xDb46d1Dc155634FbC732f92E853b10B288AD5a1d',
         contractInterface: LensHubProxy,
         functionName: 'postWithSig',
         onError(error: any) {
             toast.error(error?.data?.message ?? error?.message)
+        },
+        onSuccess(data: any) {
+            toast.success('Successfully posted', data)
         }
     })
-
 
     const uploadImageCallBack = async (file: File) => {
         console.log("Uploading image")
@@ -81,6 +85,81 @@ const List = () => {
                 })
             }
         )
+    }
+
+    const updateModuleParams = () => {
+        if (collectModule.name === 'FreeCollectModuleSettings') {
+            setCollectModule({
+                name: 'FreeCollectModuleSettings',
+                moduleParams: {
+                    freeCollectModule: {
+                        followerOnly: onlyFollower,
+                    }
+                }
+            })
+        } else if (collectModule.name === 'FeeCollectModuleSettings') {
+            setCollectModule({
+                name: 'FeeCollectModuleSettings',
+                moduleParams: {
+                    feeCollectModule: {
+                        amount: {
+                            currency: currency,
+                            value: price
+                        },
+                        referralFee: 0,
+                        recipient: address,
+                        followerOnly: onlyFollower
+                    }
+                }
+            })
+        } else if (collectModule.name === 'LimitedFeeCollectModuleSettings') {
+            setCollectModule({
+                name: 'LimitedFeeCollectModuleSettings',
+                moduleParams: {
+                    limitedFeeCollectModule: {
+                        collectLimit: collectLimit,
+                        amount: {
+                            currency: currency,
+                            value: price
+                        },
+                        referralFee: 0,
+                        recipient: address,
+                        followerOnly: onlyFollower
+                    }
+                }
+            })
+        } else if (collectModule.name === 'LimitedTimedFeeCollectModuleSettings') {
+            setCollectModule({
+                name: 'LimitedTimedFeeCollectModuleSettings',
+                moduleParams: {
+                    limitedTimedFeeCollectModule: {
+                        collectLimit: collectLimit,
+                        amount: {
+                            currency: currency,
+                            value: price
+                        },
+                        referralFee: 0,
+                        recipient: address,
+                        followerOnly: onlyFollower
+                    }
+                }
+            })
+        } else {
+            setCollectModule({
+                name: 'TimedFeeCollectModuleSettings',
+                moduleParams: {
+                    timedFeeCollectModule: {
+                        amount: {
+                            currency: currency,
+                            value: price
+                        },
+                        referralFee: 0,
+                        recipient: address,
+                        followerOnly: onlyFollower
+                    }
+                }
+            })
+        }
     }
 
     const [createPostTypedData] = useMutation(CREATE_POST_TYPED_DATA, {
@@ -116,7 +195,7 @@ const List = () => {
                       sig
                     }
 
-                    write({args: inputStruct})
+                    write({ args: inputStruct })
                 })         
         }
     })
@@ -124,23 +203,23 @@ const List = () => {
     const listItem = async () => {
         if (!isConnected) {
             alert("Connect your wallet")
-        } else if (chain?.id !== chains.polygonMumbai.id ) {console.log(chain?.id, chains.polygonMumbai.id)
+        } else if (chain?.id !== chains.polygon.id ) {
             alert("Connect your wallet to Polygon Mumbai Testnet")
         } else if (profile === undefined) {
             alert("You don't have a lens profile")
         } else {
+            updateModuleParams()
+            console.log(collectModule)
             setIsUploading(true)
-            console.log("Uploading")
             const { path } = await uploadToIPFS({
                 version: '1.0.0',
                 metadata_id: uuidv4(),
-                description: content?.description,
-                content: content?.title,
-                external_url: null,
+                description: content?.title,
+                content: content?.description,
                 image: image,
-                imageMimeType: null,
+                imageMimeType: imageMimeType,
                 name: `Item listed by @${profile?.handle}`,
-                mainContentFocus: image,
+                mainContentFocus: "IMAGE",
                 attributes: [
                     {
                         //fix this
@@ -149,9 +228,12 @@ const List = () => {
                         value: 'in-game item'
                     }
                 ],
-                media: image,
+                media: [{
+                    item: image,
+                    type: imageMimeType
+                }],
                 createdOn: new Date(),
-                appId: 'Lensgame-marketplace-test'
+                appId: 'lensgame-marketplace-test'
             })
             setIsUploading(false)
             setContentURI(`https://ipfs.infura.io/ipfs/${path}`)
@@ -163,7 +245,7 @@ const List = () => {
                         contentURI: contentURI,
                         collectModule: collectModule?.moduleParams,
                         referenceModule: {
-                            followerOnlyReferenceModule: true
+                            followerOnlyReferenceModule: false
                         }
                     }
                 }
@@ -180,17 +262,28 @@ const List = () => {
                         <label className="font-bold">Title</label><br />
                         <input 
                             className="w-full border-2 border-gray-300 rounded-lg p-2 my-3"
-                            type="text" onChange={(e) => setContent({...content, [content.title]: e.target.value})} /><br />
+                            type="text" onChange={(e) => {
+                                setContent({
+                                    ...content,
+                                    title: e.target.value
+                                })
+                            }} /><br />
                         <label className="font-bold">Description</label><br />
                         <textarea 
                             className="w-full h-40 border-2 border-gray-300 rounded-lg p-2 my-3"
-                            onChange={(e) => setContent({...content, [content.description]: e.target.value})} /><br />
+                            onChange={(e) => {
+                                setContent({
+                                    ...content,
+                                    description: e.target.value
+                                })
+                            }} /><br />
                         
                         <label className="font-bold">Upload file</label>
                         <input onChange={(e) => {
                             const file = e.target.files
                             if (file) {
                                 uploadImageCallBack(file[0])
+                                setImageMimeType(file[0].type)
                             }
                         }}
                             className="my-3 w-full text-sm rounded-lg border-2 border-gray-300 p-2 cursor-pointer focus:outline-none" type="file" /><br />
@@ -208,18 +301,8 @@ const List = () => {
                                         <div className="flex">
                                             <button onClick={() => {
                                                 setCollectModule({
-                                                    name: 'FeeCollectModuleSettings',
-                                                    moduleParams: {
-                                                        feeCollectModule: {
-                                                            amount: {
-                                                                currency: currency,
-                                                                value: price
-                                                            },
-                                                            referralFee: 0,
-                                                            recipient: address,
-                                                            followerOnly: onlyFollower
-                                                        }
-                                                    }
+                                                    ...collectModule,
+                                                    name: 'FeeCollectModuleSettings'
                                                 })
                                             }}
                                                 className="py-2 px-4 ">Fee Collect</button>
@@ -235,12 +318,8 @@ const List = () => {
                                         <div className="flex">
                                             <button onClick={()=> {
                                                 setCollectModule({
-                                                    name: 'FreeCollectModuleSettings',
-                                                    moduleParams: {
-                                                        freeCollectModule: {
-                                                            followerOnly: onlyFollower,
-                                                        }
-                                                    }
+                                                    ...collectModule,
+                                                    name: 'FreeCollectModuleSettings'
                                                 })
                                             }}
                                                 className="block py-2 px-4">Free Collect</button>
@@ -256,19 +335,8 @@ const List = () => {
                                         <div className="flex">
                                             <button onClick={() => {
                                                 setCollectModule({
-                                                    name: 'LimitedFeeCollectModuleSettings',
-                                                    moduleParams: {
-                                                        limitedFeeCollectModule: {
-                                                            collectLimit: collectLimit,
-                                                            amount: {
-                                                                currency: currency,
-                                                                value: price
-                                                            },
-                                                            referralFee: 0,
-                                                            recipient: address,
-                                                            followerOnly: onlyFollower
-                                                        }
-                                                    }
+                                                    ...collectModule,
+                                                    name: 'LimitedFeeCollectModuleSettings'
                                                 })
                                             }}
                                                 className="block py-2 px-4">Limited Fee Collect</button>
@@ -284,19 +352,8 @@ const List = () => {
                                         <div className="flex">
                                             <button onClick={() => {
                                                 setCollectModule({
-                                                    name: 'LimitedTimedFeeCollectModuleSettings',
-                                                    moduleParams: {
-                                                        limitedTimedFeeCollectModule: {
-                                                            collectLimit: collectLimit,
-                                                            amount: {
-                                                                currency: currency,
-                                                                value: price
-                                                            },
-                                                            referralFee: 0,
-                                                            recipient: address,
-                                                            followerOnly: onlyFollower
-                                                        }
-                                                    }
+                                                    ...collectModule,
+                                                    name: 'LimitedTimedFeeCollectModuleSettings'
                                                 })
                                             }} 
                                             className="block py-2 px-4">Limited Time Fee Collect</button>
@@ -312,18 +369,8 @@ const List = () => {
                                         <div className="flex">
                                             <button onClick={() => {
                                                 setCollectModule({
-                                                    name: 'TimedFeeCollectModuleSettings',
-                                                    moduleParams: {
-                                                        timedFeeCollectModule: {
-                                                            amount: {
-                                                                currency: currency,
-                                                                value: price
-                                                            },
-                                                            referralFee: 0,
-                                                            recipient: address,
-                                                            followerOnly: onlyFollower
-                                                        }
-                                                    }
+                                                    ...collectModule,
+                                                    name: 'TimedFeeCollectModuleSettings'
                                                 })
                                             }} 
                                             className="block py-2 px-4">Timed Fee Collect</button>

@@ -31,7 +31,7 @@ const SetContext = () => {
           request: {
             profileId: profile?.id,
             publicationTypes: ["POST"],
-            sources: ["lensgame-marketplace"]
+            sources: ["lensgame-marketplace-test"]
           }
         },
         fetchPolicy: 'no-cache',
