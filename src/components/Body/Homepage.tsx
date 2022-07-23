@@ -18,13 +18,13 @@ const Home = () => {
                         <button 
                             className="text-white rounded-lg bg-black p-3 mr-3">
                             <Link href="/login">
-                                Buy item
+                                Collect item
                             </Link>
                         </button>
                         <button 
                             className="text-white rounded-lg bg-black p-3">
                             <Link href="/login">
-                                Sell item
+                                List item
                             </Link>
                         </button>
                     </div>

@@ -4,14 +4,17 @@ import { Modal } from '@components/UI/Modal'
 import { useState, useEffect } from 'react'
 import Connect from './Connect'
 import { UserCircleIcon, UserIcon, LogoutIcon } from '@heroicons/react/outline'
-import { useAccount } from 'wagmi'
+import { useAccount, useSwitchNetwork, useNetwork, chain as chains } from 'wagmi'
 import Cookies from 'js-cookie';
 import LogIn from './LogIn'
 import SetContext from '@components/utils/SetContext'
 import { useAppContext } from '@components/utils/AppContext'
+import { useRouter } from 'next/router'
 
 const Header = () => {
     const { isConnected } = useAccount()
+    const { switchNetwork } = useSwitchNetwork()
+    const { chain } = useNetwork()
     const [showConnectModal, setShowConnectModal] = useState(false)
     const [loggedIn, setLoggedIn] = useState(false)
     const { profile } = useAppContext()
@@ -21,7 +24,11 @@ const Header = () => {
         if (accessToken !== undefined) {
             setLoggedIn(true);
         }
-    }, [loggedIn])
+
+        if (chain?.id !== chains.polygonMumbai.id) {
+            switchNetwork?.(chains.polygonMumbai.id)
+        }
+    }, [loggedIn, switchNetwork, chain])
 
     const logout = () => {
         Cookies.remove('accessToken')
@@ -38,20 +45,37 @@ const Header = () => {
                     <Image src="/lensgame.png" width={30} height={30} alt="lensgame-marketplace" />
                 </Link>
             </div>
-            <div className="w-3/5">
-
+            <div className="w-3/5 flex justify-center">
+                <div className={`mx-1 p-2 ${useRouter().pathname === '/play' ?
+                            "bg-gray-200 rounded-lg" : null}`}>
+                    <Link href="/play">
+                        Play
+                    </Link>
+                </div>
+                <div className={`mx-1 p-2 ${useRouter().pathname === '/list' ?
+                            "bg-gray-200 rounded-lg" : null}`}>
+                    <Link href="/list">
+                        List
+                    </Link>
+                </div>
+                <div className={`mx-1 p-2 ${useRouter().pathname === '/collect' ?
+                            "bg-gray-200 rounded-lg" : null}`}>
+                    <Link href="/collect">
+                        Collect
+                    </Link>
+                </div>
             </div>
-            <div className="w-1/5">
+            <div className="w-1/5 ">
                 {
                     isConnected ?
-                        <div className="group text-base">
+                        <div className="group float-right">
                             {
                                 !profile?.picture?.original?.url?
                                     <UserCircleIcon className="w-8" /> 
                                     : <Image src={profile?.picture?.original?.url} width={30} height={30} alt="lensgame-user" />
                             }
                             <div 
-                                className="justify-start rounded-lg border-2 bg-gray-100 invisible group-hover:visible inline-block absolute z-10 py-2 shadow-sm transition-opacity duration-300 max-w-lg">
+                                className="right-20 top-12 rounded-lg border-2 bg-gray-100 invisible group-hover:visible inline-block absolute z-10 py-2 shadow-sm transition-opacity duration-300 w-48">
                                 {
                                     profile && <div className="border-b-2 px-5 p-2">
                                                     Logged in as @{profile?.handle}

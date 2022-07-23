@@ -42,6 +42,6 @@ module.exports = {
     })
   ],
   variants: {
-    visibility: ["responsive", "hover", "focus", "group-hover"],
+    visibility: ["responsive", "hover", "focus", "group-hover peer-hover"],
   }
 }
