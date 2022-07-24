@@ -6,15 +6,15 @@ import {
   useContext,
   useState 
 } from 'react';
-import { Profile, Post} from '@generated/types'
+import { Profile, Publication } from '@generated/types'
 
 export interface ContextType {
     address: string | undefined;
     profile: Profile | undefined;
-    posts: Post[];
+    posts: any[];
     setUserAddress: Dispatch<SetStateAction<string>>;
     setProfile: Dispatch<SetStateAction<Profile | undefined>>;
-    setPosts: Dispatch<SetStateAction<Post[]>>;
+    setPosts: Dispatch<SetStateAction<any[]>>;
   }
 
 type Props = {
@@ -33,7 +33,7 @@ const AppContext = createContext<ContextType>({
 export function AppWrapper({ children }: Props) {
   const [address, setUserAddress] = useState("")
   const [profile, setProfile] = useState<Profile | undefined>()
-  const [posts, setPosts] = useState<Post[]>([])
+  const [posts, setPosts] = useState<any[]>([])
 
   const value = {
     address,

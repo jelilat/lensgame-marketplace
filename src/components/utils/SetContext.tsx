@@ -35,7 +35,7 @@ const SetContext = () => {
           }
         },
         fetchPolicy: 'no-cache',
-        onCompleted(data) {console.log(data)
+        onCompleted(data) {console.log(data?.publications?.items)
           setPosts(data?.publications?.items);
         }
       })

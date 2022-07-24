@@ -1,5 +1,6 @@
 import Image from 'next/image'
 import Link from 'next/link'
+import Collect from '@components/Trade/Collect'
 
 const Home = () => {
     return (
@@ -39,6 +40,7 @@ const Home = () => {
                 className="flex font-mono justify-center lg:text-5xl sm:text-xl md:text-3xl font-bold">
                 Explore
             </div>
+            <Collect filter={3} />
         </>
     )
 }

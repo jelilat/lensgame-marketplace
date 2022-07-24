@@ -19,7 +19,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { InformationCircleIcon } from '@heroicons/react/outline'
 import { LensHubProxy } from 'src/abis/LensHubProxy'
 
-type CollectModuleSettings = 
+export type CollectModuleSettings = 
     'FeeCollectModuleSettings'|
     'FreeCollectModuleSettings'|
     'LimitedFeeCollectModuleSettings'|
@@ -204,7 +204,7 @@ const List = () => {
         if (!isConnected) {
             alert("Connect your wallet")
         } else if (chain?.id !== chains.polygon.id ) {
-            alert("Connect your wallet to Polygon Mumbai Testnet")
+            alert("Connect your wallet to Polygon")
         } else if (profile === undefined) {
             alert("You don't have a lens profile")
         } else {
