@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useAccount } from 'wagmi'
 import { useAppContext } from '@components/utils/AppContext'
-import { useLazyQuery } from '@apollo/client'
+import { useLazyQuery, useQuery } from '@apollo/client'
 import { GET_DEFAULT_PROFILE } from '@graphql/Queries/Profile'
 import { GET_PUBLICATIONS } from '@graphql/Queries/Publications'
 
@@ -26,7 +26,7 @@ const SetContext = () => {
         },
       })
 
-      const [getPublications] = useLazyQuery(GET_PUBLICATIONS, {
+      useQuery(GET_PUBLICATIONS, {
         variables: {
           request: {
             profileId: profile?.id,
@@ -41,12 +41,11 @@ const SetContext = () => {
       })
     
       useEffect(() => {
-        getPublications()
         if (isConnected) {
           setUserAddress(address!);
           getProfile()
         }
-      }, [isConnected, address, setUserAddress, getProfile, getPublications]);
+      }, [isConnected, address, setUserAddress, getProfile]);
     
       return (
         <></>
