@@ -41,10 +41,10 @@ const SetContext = () => {
       })
     
       useEffect(() => {
+        getPublications()
         if (isConnected) {
           setUserAddress(address!);
           getProfile()
-          getPublications()
         }
       }, [isConnected, address, setUserAddress, getProfile, getPublications]);
     
